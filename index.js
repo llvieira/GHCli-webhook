@@ -20,14 +20,17 @@ setInterval(function(){ getNotifications() }, 5000);
 function getNotifications() {
 	Object.keys(users).forEach(function(key) {
   		var gitCredentials = users[key].data.credentials;
-  		var notificationsDate = "";
+  		var notificationsDate = users[key].data.notificationsDate;
   		var userSocket = users[key].socket;
 
-  		// TODO
-  		request('https://api.github.com/notifications?since=2014-11-07T08:00:00Z', { json: true }, (err, res, body) => {
+  		// TODO: make this request work
+  		request(`https://api.github.com/notifications?since=${notificationsDate}`, { json: true }, (err, res, body) => {
   			if (err) { 
   				return console.log(err); 
   			}
+
+  			// update user's notification date to the last notifications date
+  			// users[key].data.notificationsDate = ...
 
   			userSocket.emit('new_msg', body);
 		});
