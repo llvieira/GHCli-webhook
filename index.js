@@ -1,7 +1,7 @@
 var app = require('express')();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
-const request = require('request');
+var github = require('github-api');
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
@@ -19,20 +19,22 @@ setInterval(function(){ getNotifications() }, 5000);
 
 function getNotifications() {
 	Object.keys(users).forEach(function(key) {
-  		var gitCredentials = users[key].data.credentials;
-  		var notificationsDate = users[key].data.notificationsDate;
+  		var gitToken = users[key].data.token;
   		var userSocket = users[key].socket;
 
-  		// TODO: make this request work
-  		request(`https://api.github.com/notifications?since=${notificationsDate}`, { json: true }, (err, res, body) => {
-  			if (err) { 
-  				return console.log(err); 
-  			}
+  		var gh = new github({
+  			token: gitToken
+		});
 
-  			// update user's notification date to the last notifications date
-  			// users[key].data.notificationsDate = ...
+		var me = gh.getUser();
 
-  			userSocket.emit('new_msg', body);
+		me.listNotifications(function(err, notifications) {
+			if (err) { 
+				return console.log(err);
+			}
+
+			console.log(notifications);
+			userSocket.emit('notification', notifications);
 		});
 	});
 }
@@ -43,4 +45,5 @@ http.listen(3000, function(){
 
 // https://socket.io/get-started/chat]
 // https://developer.github.com/v3/activity/notifications/
+// https://www.npmjs.com/package/github-api
 // https://stackoverflow.com/questions/17476294/how-to-send-a-message-to-a-particular-client-with-socket-io
