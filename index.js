@@ -9,21 +9,33 @@ app.get('/', function(req, res){
 
 var users = {}
 
-io.on('connection', function(socket){
+io.on('connection', function(socket) {
+  console.log('user connected!');
   socket.on('message', function (data) {
+	data = JSON.parse(data); 
+	setUserAndPass(data);
   	users[data.email] = {data: data, socket: socket}
   });
 });
 
-setInterval(function(){ getNotifications() }, 5000);
+function setUserAndPass(data) {
+	let buff = new Buffer(data.token, 'base64');
+        let text = buff.toString('ascii').split(':');
+        data.username = text[0];
+        data.password = text[1];
+}
+
+setInterval(function(){ getNotifications() }, 10000);
 
 function getNotifications() {
 	Object.keys(users).forEach(function(key) {
-  		var gitToken = users[key].data.token;
+  		//var gitToken = users[key].data.token;
   		var userSocket = users[key].socket;
 
   		var gh = new github({
-  			token: gitToken
+  			//token: gitToken
+			username: users[key].data.username,
+			password: users[key].data.password
 		});
 
 		var me = gh.getUser();
