@@ -29,11 +29,9 @@ setInterval(function(){ getNotifications() }, 10000);
 
 function getNotifications() {
 	Object.keys(users).forEach(function(key) {
-  		// var gitToken = users[key].data.token;
   		var userSocket = users[key].socket;
 
   		var gh = new github({
-  			// token: gitToken
 			username: users[key].data.username,
 			password: users[key].data.password
 		});
